@@ -24,12 +24,6 @@ ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=nonint
 ARG ONLYOFFICE_VALUE=onlyoffice
 
 COPY fonts-cache/ /usr/share/fonts/truetype/msttcorefonts/
-RUN if [ -z "$(ls -A /usr/share/fonts/truetype/msttcorefonts 2>/dev/null || true)" ]; then \
-      echo "ttf-mscorefonts cache is empty -> install via apt"; \
-      echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections; \
-      apt-get update && apt-get install -y --no-install-recommends ttf-mscorefonts-installer fontconfig; \
-    fi && \
-    fc-cache -fv || true
 
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get -y update && \
@@ -40,7 +34,9 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
-    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
+    if [ -z "$(ls -A /usr/share/fonts/truetype/msttcorefonts 2>/dev/null || true)" ]; then \
+      echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections; \
+    fi && \
     ACCEPT_EULA=Y apt-get -yq install \
         adduser \
         apt-utils \
@@ -75,12 +71,13 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         redis-server \
         sudo \
         supervisor \
-        ttf-mscorefonts-installer \
         unixodbc-dev \
         unzip \
         xvfb \
         xxd \
-        zlib1g || dpkg --configure -a && \
+        zlib1g \
+        $( [ -z "$(ls -A /usr/share/fonts/truetype/msttcorefonts 2>/dev/null || true)" ] && echo ttf-mscorefonts-installer ) \
+        || dpkg --configure -a && \
     # Added dpkg --configure -a to handle installation issues with rabbitmq-server on arm64 architecture
     if [  $(ls -l /usr/share/fonts/truetype/msttcorefonts | wc -l) -ne 61 ]; \
         then echo 'msttcorefonts failed to download'; exit 1; fi  && \
