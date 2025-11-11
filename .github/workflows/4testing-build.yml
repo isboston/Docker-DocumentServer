@@ -36,29 +36,21 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Restore msfonts cache
+      - name: Restore or prepare msfonts cache
         id: msfonts
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         with:
           path: fonts-cache
           key: msfonts-${{ runner.os }}-v1
 
-      - name: Populate fonts-cache if empty
-        run: |
-          mkdir -p fonts-cache
-          if [ -z "$(ls -A fonts-cache || true)" ]; then
-            sudo apt-get update
-            echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
-            sudo apt-get install -y ttf-mscorefonts-installer
-            cp -a /usr/share/fonts/truetype/msttcorefonts/* fonts-cache/
-          fi
-
-      - name: Save msfonts cache (first run only)
+      - name: Install msfonts if not cached
         if: steps.msfonts.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: fonts-cache
-          key: msfonts-${{ runner.os }}-v1
+        run: |
+          sudo apt-get update
+          echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
+          sudo apt-get install -y ttf-mscorefonts-installer
+          mkdir -p fonts-cache
+          cp -a /usr/share/fonts/truetype/msttcorefonts/* fonts-cache/
 
       - name: Build 4testing
         id: build-ds
