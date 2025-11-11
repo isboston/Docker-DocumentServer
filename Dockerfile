@@ -22,7 +22,6 @@ ENV OC_DOWNLOAD_URL=https://download.oracle.com/otn_software/linux/instantclient
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=noninteractive PG_VERSION=${PG_VERSION} BASE_VERSION=${BASE_VERSION}
 
 ARG ONLYOFFICE_VALUE=onlyoffice
-
 COPY fonts-cache/ /usr/share/fonts/truetype/msttcorefonts/
 
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
@@ -34,7 +33,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
-    if [ -z "$(ls -A /usr/share/fonts/truetype/msttcorefonts 2>/dev/null || true)" ]; then \
+    if [ -z "$(find /usr/share/fonts/truetype/msttcorefonts -mindepth 1 -print -quit 2>/dev/null)" ]; then \
       echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections; \
     fi && \
     ACCEPT_EULA=Y apt-get -yq install \
@@ -76,8 +75,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         xvfb \
         xxd \
         zlib1g \
-        $( [ -z "$(ls -A /usr/share/fonts/truetype/msttcorefonts 2>/dev/null || true)" ] && echo ttf-mscorefonts-installer ) \
-        || dpkg --configure -a && \
+        $( [ -z "$(find /usr/share/fonts/truetype/msttcorefonts -mindepth 1 -print -quit 2>/dev/null)" ] && echo ttf-mscorefonts-installer ) || dpkg --configure -a && \
     # Added dpkg --configure -a to handle installation issues with rabbitmq-server on arm64 architecture
     if [  $(ls -l /usr/share/fonts/truetype/msttcorefonts | wc -l) -ne 61 ]; \
         then echo 'msttcorefonts failed to download'; exit 1; fi  && \
@@ -126,6 +124,8 @@ RUN PACKAGE_FILE="${COMPANY_NAME}-${PRODUCT_NAME}${PRODUCT_EDITION}${PACKAGE_VER
     apt-get -y update && \
     service postgresql start && \
     apt-get -yq install /tmp/$PACKAGE_FILE && \
+    PGPASSWORD=$ONLYOFFICE_VALUE dropdb -h localhost -p 5432 -U $ONLYOFFICE_VALUE $ONLYOFFICE_VALUE && \
+    sudo -u postgres psql -c "DROP ROLE onlyoffice;" && \
     service postgresql stop && \
     chmod 755 /etc/init.d/supervisor && \
     sed "s/COMPANY_NAME/${COMPANY_NAME}/g" -i /etc/supervisor/conf.d/*.conf && \
