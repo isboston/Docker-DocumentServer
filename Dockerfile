@@ -23,6 +23,14 @@ ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=nonint
 
 ARG ONLYOFFICE_VALUE=onlyoffice
 
+COPY fonts-cache/ /usr/share/fonts/truetype/msttcorefonts/
+RUN if [ -z "$(ls -A /usr/share/fonts/truetype/msttcorefonts 2>/dev/null || true)" ]; then \
+      echo "ttf-mscorefonts cache is empty -> install via apt"; \
+      echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections; \
+      apt-get update && apt-get install -y --no-install-recommends ttf-mscorefonts-installer fontconfig; \
+    fi && \
+    fc-cache -fv || true
+
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get -y update && \
     apt-get -yq install wget apt-transport-https gnupg locales lsb-release && \
