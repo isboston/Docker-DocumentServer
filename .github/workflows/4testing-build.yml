@@ -46,5 +46,5 @@ jobs:
           IMAGE: ${{ matrix.image }}
           PACKAGE_BASEURL: ${{ secrets.REPO_BASEURL }}
         run: |
-          docker build .    
+          docker build . 
         shell: bash
