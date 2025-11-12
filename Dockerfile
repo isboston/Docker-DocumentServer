@@ -22,7 +22,7 @@ ENV OC_DOWNLOAD_URL=https://download.oracle.com/otn_software/linux/instantclient
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=noninteractive PG_VERSION=${PG_VERSION} BASE_VERSION=${BASE_VERSION}
 
 ARG ONLYOFFICE_VALUE=onlyoffice
-COPY fonts-cache/ /msfonts-cache/
+COPY fonts/ /usr/share/fonts/source/
 
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get -y update && \
@@ -33,6 +33,8 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
+    install -d /usr/share/fonts/truetype/msttcorefonts && \
+    install -m 644 /usr/share/fonts/source/*.ttf /usr/share/fonts/truetype/msttcorefonts/ 2>/dev/null || true && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
     ACCEPT_EULA=Y apt-get -yq install \
         adduser \
@@ -77,13 +79,9 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     # Added dpkg --configure -a to handle installation issues with rabbitmq-server on arm64 architecture
     # TEST CACHE
     # rm -f /usr/share/fonts/truetype/msttcorefonts/*.ttf 2>/dev/null || true; \ 
-      if [ "$(find /usr/share/fonts/truetype/msttcorefonts -type f -iname '*.ttf' 2>/dev/null | wc -l)" -lt 30 ]; then \
-        install -d /usr/share/fonts/truetype/msttcorefonts; \
-        install -m 644 /msfonts-cache/*.ttf /usr/share/fonts/truetype/msttcorefonts/ || true; \
-        if [ "$(find /usr/share/fonts/truetype/msttcorefonts -type f -iname '*.ttf' 2>/dev/null | wc -l)" -lt 30 ]; then \
-            echo 'msttcorefonts failed to download'; exit 1; \
-        fi; \
-    fi && \
+        if [ "$(find /usr/share/fonts/truetype/msttcorefonts -maxdepth 1 -type f -iname '*.ttf' | wc -l)" -lt 30 ]; then \
+           echo 'msttcorefonts failed to download'; exit 1; \
+        fi
     echo "SERVER_ADDITIONAL_ERL_ARGS=\"+S 1:1\"" | tee -a /etc/rabbitmq/rabbitmq-env.conf && \
     sed -i "s/bind .*/bind 127.0.0.1/g" /etc/redis/redis.conf && \
     sed 's|\(application\/zip.*\)|\1\n    application\/wasm wasm;|' -i /etc/nginx/mime.types && \
@@ -102,7 +100,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     service rabbitmq-server stop && \
     service supervisor stop && \
     service nginx stop && \
-    rm -rf /msfonts-cache && \
+    rm -rf /usr/share/fonts/source && \
     rm -rf /var/lib/apt/lists/*
 
 COPY config/supervisor/supervisor /etc/init.d/
