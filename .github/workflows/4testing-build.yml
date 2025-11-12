@@ -40,7 +40,7 @@ jobs:
         id: msfonts
         uses: actions/cache@v4
         with:
-          path: fonts-cache
+          path: fonts
           key: msfonts-${{ runner.os }}-v1
       - name: Install msfonts if not cached
         if: steps.msfonts.outputs.cache-hit != 'true'
@@ -48,8 +48,8 @@ jobs:
           sudo apt-get update
           echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
           sudo apt-get install -y ttf-mscorefonts-installer
-          mkdir -p fonts-cache
-          cp -a /usr/share/fonts/truetype/msttcorefonts/* fonts-cache/
+          mkdir -p fonts
+          cp -a /usr/share/fonts/truetype/msttcorefonts/* fonts/
 
       - name: Build 4testing
         id: build-ds
