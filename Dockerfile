@@ -35,7 +35,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     locale-gen en_US.UTF-8 && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
     install -d /usr/share/fonts/truetype/msttcorefonts && \
-    install -m 644 /usr/share/fonts/source/*.ttf /usr/share/fonts/truetype/msttcorefonts/ && \
+    install -m 644 /usr/share/fonts/source/*.ttf /usr/share/fonts/truetype/msttcorefonts/ 2>/dev/null || true && \
     ACCEPT_EULA=Y apt-get -yq install \
         adduser \
         apt-utils \
@@ -77,7 +77,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         xxd \
         zlib1g || dpkg --configure -a && \
     # Added dpkg --configure -a to handle installation issues with rabbitmq-server on arm64 architecture
-    if [ "$(find /usr/share/fonts/truetype/msttcorefonts -maxdepth 1 -type f -iname '*.ttf' | wc -l)" -lt 30 ]; \
+    if [  $(find /usr/share/fonts/truetype/msttcorefonts -maxdepth 1 -type f -iname '*.ttf' | wc -l) -lt 30 ]; \
         then echo 'msttcorefonts failed to download'; exit 1; fi  && \
     echo "SERVER_ADDITIONAL_ERL_ARGS=\"+S 1:1\"" | tee -a /etc/rabbitmq/rabbitmq-env.conf && \
     sed -i "s/bind .*/bind 127.0.0.1/g" /etc/redis/redis.conf && \
