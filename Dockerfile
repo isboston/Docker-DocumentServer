@@ -33,6 +33,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
+    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
     install -d /usr/share/fonts/truetype/msttcorefonts && \
     install -m 644 /usr/share/fonts/source/*.ttf /usr/share/fonts/truetype/msttcorefonts/ && \
     ACCEPT_EULA=Y apt-get -yq install \
@@ -69,6 +70,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         redis-server \
         sudo \
         supervisor \
+        ttf-mscorefonts-installer \
         unixodbc-dev \
         unzip \
         xvfb \
