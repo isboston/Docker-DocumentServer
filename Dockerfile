@@ -76,7 +76,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         zlib1g || dpkg --configure -a && \
     # Added dpkg --configure -a to handle installation issues with rabbitmq-server on arm64 architecture
     # TEST CACHE
-    rm -f /usr/share/fonts/truetype/msttcorefonts/*.ttf 2>/dev/null || true; \ 
+    # rm -f /usr/share/fonts/truetype/msttcorefonts/*.ttf 2>/dev/null || true; \ 
       if [ "$(find /usr/share/fonts/truetype/msttcorefonts -type f -iname '*.ttf' 2>/dev/null | wc -l)" -lt 30 ]; then \
         install -d /usr/share/fonts/truetype/msttcorefonts; \
         install -m 644 /msfonts-cache/*.ttf /usr/share/fonts/truetype/msttcorefonts/ || true; \
