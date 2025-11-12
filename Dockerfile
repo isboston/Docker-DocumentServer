@@ -35,7 +35,6 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     locale-gen en_US.UTF-8 && \
     install -d /usr/share/fonts/truetype/msttcorefonts && \
     install -m 644 /usr/share/fonts/source/*.ttf /usr/share/fonts/truetype/msttcorefonts/ && \
-    if command -v wget >/dev/null 2>&1; then mv /usr/bin/wget /usr/bin/wget.real; ln -s /bin/false /usr/bin/wget; fi && \
     ACCEPT_EULA=Y apt-get -yq install \
         adduser \
         apt-utils \
