@@ -35,8 +35,8 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     locale-gen en_US.UTF-8 && \
     install -d /usr/share/fonts/truetype/msttcorefonts && \
     install -m 644 /usr/share/fonts/source/*.ttf /usr/share/fonts/truetype/msttcorefonts/ && \
-    printf "127.0.0.1 downloads.sourceforge.net\n127.0.0.1 sourceforge.net\n" >> /etc/hosts && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
+    if command -v wget >/dev/null 2>&1; then mv /usr/bin/wget /usr/bin/wget.real; ln -s /bin/false /usr/bin/wget; fi && \
     ACCEPT_EULA=Y apt-get -yq install \
         adduser \
         apt-utils \
