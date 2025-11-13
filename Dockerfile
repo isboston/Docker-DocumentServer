@@ -22,7 +22,7 @@ ENV OC_DOWNLOAD_URL=https://download.oracle.com/otn_software/linux/instantclient
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=noninteractive PG_VERSION=${PG_VERSION} BASE_VERSION=${BASE_VERSION}
 
 ARG ONLYOFFICE_VALUE=onlyoffice
-COPY fonts/ /usr/share/fonts/source/
+COPY fonts/ /usr/share/fonts/truetype/msttcorefonts/
 
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get -y update && \
@@ -34,8 +34,6 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
-    install -d /usr/share/fonts/truetype/msttcorefonts && \
-    install -m 644 /usr/share/fonts/source/*.ttf /usr/share/fonts/truetype/msttcorefonts/ 2>/dev/null || true && \
     ACCEPT_EULA=Y apt-get -yq install \
         adduser \
         apt-utils \
